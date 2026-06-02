@@ -34,7 +34,6 @@ size = Vector3(1.5, 2.5, 0.2)
 transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 10, 0)
 shadow_enabled = true
 
-; BUG: Camera is at y=-0.3, clipping below the floor surface.
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.3, 8)
 
@@ -55,12 +54,10 @@ shape = SubResource("BoxShape3D_2")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wall_03"]
 mesh = SubResource("BoxMesh_2")
 
-; BUG: Bridge has no CollisionShape3D — player will fall through at runtime.
 [node name="Bridge_02" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.0, 5)
 mesh = SubResource("BoxMesh_3")
 
-; BUG: Decorative pillar has no CollisionShape3D — player will clip through it.
 [node name="Pillar_Deco" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2.0, -3)
 mesh = SubResource("BoxMesh_4")
@@ -83,7 +80,6 @@ shape = SubResource("CapsuleShape3D_1")
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
 mesh = SubResource("CapsuleMesh_1")
 
-; BUG: Enemy_01 and Enemy_02 are 0.2 units apart — physics bodies will jitter/conflict.
 [node name="Enemy_01" type="CharacterBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 1.0, 0)
 
