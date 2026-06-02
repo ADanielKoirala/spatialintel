@@ -63,5 +63,89 @@ async def summarize_scene() -> str:
     return _fmt(await bridge.summarize_scene())
 
 
+@mcp.tool()
+async def analyze_scene() -> str:
+    """Run a full diagnostic analysis of the current Godot 4 scene.
+
+    Collects scene summary, missing colliders, and overlapping objects in a single
+    round-trip, then classifies each finding by severity and returns a structured
+    QA report with an overall risk level.
+
+    Risk levels: None / Low / Medium / High
+    Severity levels per issue: info / low / medium / high
+    """
+    raw = await bridge.analyze_scene()
+
+    if "error" in raw:
+        return _fmt({"error": raw["error"]})
+
+    data = raw.get("result", {})
+    summary: dict = data.get("summary", {})
+    missing: list = data.get("missing_colliders", [])
+    overlapping: list = data.get("overlapping_objects", [])
+
+    issues: list[dict] = []
+
+    # Missing colliders — gameplay-breaking: objects fall through mesh
+    for item in missing:
+        issues.append({
+            "severity": "high",
+            "category": "collision",
+            "node": item["name"],
+            "path": item["path"],
+            "message": f"{item['name']} is a MeshInstance3D with no CollisionShape3D — objects will fall through it at runtime",
+        })
+
+    # No Camera3D — scene will render black
+    if summary.get("camera_count", 0) == 0:
+        issues.append({
+            "severity": "high",
+            "category": "rendering",
+            "message": "No Camera3D found in scene — nothing will render at runtime",
+        })
+
+    # Overlapping physics bodies — probable duplicate or physics explosion
+    for item in overlapping:
+        issues.append({
+            "severity": "medium",
+            "category": "physics",
+            "node_a": item["node_a"],
+            "node_b": item["node_b"],
+            "distance": item["distance"],
+            "message": (
+                f"{item['node_a']} and {item['node_b']} are {item['distance']} units apart "
+                f"— physics bodies this close may cause jitter or tunnelling"
+            ),
+        })
+
+    # No lights — might be intentional but worth flagging
+    if summary.get("light_count", 0) == 0 and summary.get("total_nodes", 0) > 1:
+        issues.append({
+            "severity": "low",
+            "category": "rendering",
+            "message": "No Light3D found — scene will rely entirely on ambient/environment lighting",
+        })
+
+    # Determine risk level
+    high = sum(1 for i in issues if i["severity"] == "high")
+    medium = sum(1 for i in issues if i["severity"] == "medium")
+
+    if high > 0:
+        risk = "High"
+    elif medium > 0:
+        risk = "Medium"
+    elif issues:
+        risk = "Low"
+    else:
+        risk = "None"
+
+    return _fmt({
+        "risk_level": risk,
+        "issue_count": len(issues),
+        "issues": issues,
+        "scene_summary": summary,
+    })
+
+
 if __name__ == "__main__":
     mcp.run()

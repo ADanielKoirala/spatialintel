@@ -50,3 +50,6 @@ class GodotBridge:
 
     async def summarize_scene(self) -> dict:
         return await self.send_command("summarize_scene")
+
+    async def analyze_scene(self) -> dict:
+        return await self.send_command("analyze_scene")

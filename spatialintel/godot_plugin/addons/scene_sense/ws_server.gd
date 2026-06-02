@@ -69,6 +69,14 @@ func _dispatch(command: String, args: Dictionary) -> Dictionary:
 			return _query.find_nodes_by_type(scene_root, args)
 		"summarize_scene":
 			return _query.summarize_scene(scene_root)
+		"analyze_scene":
+			if scene_root == null:
+				return {"error": "no scene is currently open in the editor"}
+			return {"result": {
+				"summary": _query.summarize_scene(scene_root).get("result", {}),
+				"missing_colliders": _query.find_missing_colliders(scene_root).get("result", []),
+				"overlapping_objects": _query.find_overlapping_objects(scene_root).get("result", []),
+			}}
 		_:
 			return {"error": "unknown command: %s" % command}
 
