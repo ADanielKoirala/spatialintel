@@ -75,7 +75,9 @@ func find_overlapping_objects(root: Node) -> Dictionary:
 	return {"result": results}
 
 func _collect_spatial(node: Node, out: Array) -> void:
-	if node is Node3D:
+	# Only physics bodies matter for overlap detection — collecting all Node3D
+	# would flood results with children sharing their parent's world position.
+	if node is PhysicsBody3D:
 		out.append({"name": node.name, "path": str(node.get_path()), "pos": node.global_position})
 	for child in node.get_children():
 		_collect_spatial(child, out)

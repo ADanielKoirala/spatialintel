@@ -1,0 +1,12 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the properties are organized in sections.
+
+config_version=5
+
+[application]
+
+config/name="SceneSense Demo"
+config/description="Intentionally broken Godot 4 level for testing the SceneSense analyze_scene() tool."
+config/features=PackedStringArray("4.2", "Forward Plus")
+config/run/main_scene="res://broken_level.tscn"
