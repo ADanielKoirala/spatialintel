@@ -6,7 +6,7 @@ const PORT = 9800
 const SceneInspectorScript = preload("res://addons/scene_sense/scene_inspector.gd")
 const SpatialQueryScript = preload("res://addons/scene_sense/spatial_query.gd")
 
-var _tcp: TCPServer = TCPServer.new()
+var _tcp: TCPServer
 var _peers: Dictionary = {}   # instance_id -> WebSocketPeer
 var _editor: EditorInterface
 var _inspector: RefCounted
@@ -16,6 +16,7 @@ func setup(editor: EditorInterface) -> void:
 	_editor = editor
 
 func start() -> void:
+	_tcp = TCPServer.new()
 	_inspector = SceneInspectorScript.new()
 	_query = SpatialQueryScript.new()
 
@@ -29,10 +30,13 @@ func stop() -> void:
 	for peer in _peers.values():
 		peer.close()
 	_peers.clear()
-	_tcp.stop()
+	if _tcp:
+		_tcp.stop()
 	print("SceneSense: WebSocket server stopped")
 
 func _process(_delta: float) -> void:
+	if not _tcp:
+		return
 	# Accept new TCP connections and upgrade to WebSocket
 	while _tcp.is_connection_available():
 		var stream := _tcp.take_connection()
