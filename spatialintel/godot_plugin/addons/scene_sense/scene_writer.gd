@@ -21,10 +21,10 @@ func create_node(scene_root: Node, undo_redo: EditorUndoRedoManager, args: Dicti
 	new_node.name = name
 
 	undo_redo.create_action("SceneSense: create %s '%s'" % [type, name])
-	undo_redo.add_do_method(parent.add_child.bind(new_node))
-	undo_redo.add_do_method(new_node.set_owner.bind(scene_root))
+	undo_redo.add_do_method(parent, "add_child", new_node)
+	undo_redo.add_do_method(new_node, "set_owner", scene_root)
 	undo_redo.add_do_reference(new_node)
-	undo_redo.add_undo_method(parent.remove_child.bind(new_node))
+	undo_redo.add_undo_method(parent, "remove_child", new_node)
 	undo_redo.commit_action()
 
 	return {"result": {"path": _rel(new_node, scene_root), "type": type, "name": name}}
@@ -68,9 +68,9 @@ func delete_node(scene_root: Node, undo_redo: EditorUndoRedoManager, args: Dicti
 	var parent := node.get_parent()
 
 	undo_redo.create_action("SceneSense: delete '%s'" % node_path)
-	undo_redo.add_do_method(parent.remove_child.bind(node))
-	undo_redo.add_undo_method(parent.add_child.bind(node))
-	undo_redo.add_undo_method(node.set_owner.bind(scene_root))
+	undo_redo.add_do_method(parent, "remove_child", node)
+	undo_redo.add_undo_method(parent, "add_child", node)
+	undo_redo.add_undo_method(node, "set_owner", scene_root)
 	undo_redo.add_undo_reference(node)
 	undo_redo.commit_action()
 
@@ -98,12 +98,12 @@ func move_node(scene_root: Node, undo_redo: EditorUndoRedoManager, args: Diction
 		return {"error": "node is already under %s" % new_parent_path}
 
 	undo_redo.create_action("SceneSense: move '%s' -> '%s'" % [node_path, new_parent_path])
-	undo_redo.add_do_method(old_parent.remove_child.bind(node))
-	undo_redo.add_do_method(new_parent.add_child.bind(node))
-	undo_redo.add_do_method(node.set_owner.bind(scene_root))
-	undo_redo.add_undo_method(new_parent.remove_child.bind(node))
-	undo_redo.add_undo_method(old_parent.add_child.bind(node))
-	undo_redo.add_undo_method(node.set_owner.bind(scene_root))
+	undo_redo.add_do_method(old_parent, "remove_child", node)
+	undo_redo.add_do_method(new_parent, "add_child", node)
+	undo_redo.add_do_method(node, "set_owner", scene_root)
+	undo_redo.add_undo_method(new_parent, "remove_child", node)
+	undo_redo.add_undo_method(old_parent, "add_child", node)
+	undo_redo.add_undo_method(node, "set_owner", scene_root)
 	undo_redo.commit_action()
 
 	return {"result": {"moved": node_path, "new_parent": new_parent_path}}
