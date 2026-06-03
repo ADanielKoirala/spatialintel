@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/game.gd" id="1_game"]
+
+[node name="Game" type="Node3D"]
+script = ExtResource("1_game")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 20, 0)
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 18, 14)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TimerLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 260.0
+offset_bottom = 56.0
+text = "0.0 s"
+theme_override_font_sizes/font_size = 28
+
+[node name="KeysLabel" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 64.0
+offset_right = 500.0
+offset_bottom = 96.0
+text = "Keys: none"
+theme_override_font_sizes/font_size = 20
+
+[node name="WinPanel" type="Panel" parent="HUD"]
+visible = false
+offset_left = 380.0
+offset_top = 140.0
+offset_right = 900.0
+offset_bottom = 500.0
+
+[node name="WinLabel" type="Label" parent="HUD/WinPanel"]
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 480.0
+offset_bottom = 110.0
+text = "FLOOR CLEARED!"
+theme_override_font_sizes/font_size = 42
+
+[node name="WinTimeLabel" type="Label" parent="HUD/WinPanel"]
+offset_left = 40.0
+offset_top = 130.0
+offset_right = 480.0
+offset_bottom = 180.0
+text = "Time: 0.0 s"
+theme_override_font_sizes/font_size = 26
+
+[node name="RestartButton" type="Button" parent="HUD/WinPanel"]
+offset_left = 140.0
+offset_top = 220.0
+offset_right = 380.0
+offset_bottom = 278.0
+text = "Play Again"
+theme_override_font_sizes/font_size = 22
