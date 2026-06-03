@@ -53,3 +53,17 @@ class GodotBridge:
 
     async def analyze_scene(self) -> dict:
         return await self.send_command("analyze_scene")
+
+    # Write operations
+
+    async def create_node(self, node_type: str, name: str, parent: str = ".") -> dict:
+        return await self.send_command("create_node", {"type": node_type, "name": name, "parent": parent})
+
+    async def set_property(self, node_path: str, property: str, value) -> dict:
+        return await self.send_command("set_property", {"node": node_path, "property": property, "value": value})
+
+    async def delete_node(self, node_path: str) -> dict:
+        return await self.send_command("delete_node", {"node": node_path})
+
+    async def move_node(self, node_path: str, new_parent: str) -> dict:
+        return await self.send_command("move_node", {"node": node_path, "new_parent": new_parent})

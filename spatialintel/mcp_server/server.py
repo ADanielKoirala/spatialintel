@@ -147,5 +147,64 @@ async def analyze_scene() -> str:
     })
 
 
+# ---------------------------------------------------------------------------
+# Write tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def create_node(node_type: str, node_name: str, parent_path: str = ".") -> str:
+    """Create a new node in the currently open Godot scene. The operation is undoable (Ctrl+Z).
+
+    Args:
+        node_type: Any valid Godot class name, e.g. Node3D, StaticBody3D, MeshInstance3D,
+                   CollisionShape3D, Area3D, CharacterBody3D, DirectionalLight3D, Camera3D.
+        node_name: Name to give the new node.
+        parent_path: Scene-relative path to the parent (default "." = scene root).
+    """
+    return _fmt(await bridge.create_node(node_type, node_name, parent_path))
+
+
+@mcp.tool()
+async def set_property(node_path: str, property: str, value: str) -> str:
+    """Set a property on a node in the scene. The operation is undoable (Ctrl+Z).
+
+    Common properties: position, rotation_degrees, scale, visible, name.
+    Pass Vector3 values as JSON objects: {"x": 1, "y": 2, "z": 3}
+    Pass Color values as JSON objects: {"r": 1, "g": 0, "b": 0, "a": 1}
+
+    Args:
+        node_path: Scene-relative path to the node, e.g. "Player" or "Floor/MeshInstance3D".
+        property: Property name exactly as Godot names it.
+        value: JSON-encoded value — number, boolean, string, or object for Vector3/Color.
+    """
+    import json as _json
+    try:
+        parsed = _json.loads(value)
+    except Exception:
+        parsed = value
+    return _fmt(await bridge.set_property(node_path, property, parsed))
+
+
+@mcp.tool()
+async def delete_node(node_path: str) -> str:
+    """Delete a node from the scene. The operation is undoable (Ctrl+Z).
+
+    Args:
+        node_path: Scene-relative path to the node to delete, e.g. "Enemy_02".
+    """
+    return _fmt(await bridge.delete_node(node_path))
+
+
+@mcp.tool()
+async def move_node(node_path: str, new_parent_path: str) -> str:
+    """Reparent a node to a different parent in the scene. The operation is undoable (Ctrl+Z).
+
+    Args:
+        node_path: Scene-relative path to the node to move.
+        new_parent_path: Scene-relative path to the new parent node.
+    """
+    return _fmt(await bridge.move_node(node_path, new_parent_path))
+
+
 if __name__ == "__main__":
     mcp.run()

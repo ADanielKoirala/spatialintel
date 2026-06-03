@@ -7,7 +7,7 @@ var _ws_server: Node
 
 func _enter_tree() -> void:
 	_ws_server = WSServerScript.new()
-	_ws_server.setup(get_editor_interface())
+	_ws_server.setup(get_editor_interface(), get_undo_redo())
 	add_child(_ws_server)
 	_ws_server.start()
 
