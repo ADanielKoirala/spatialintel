@@ -50,9 +50,11 @@ func build(scene_root: Node, undo_redo: EditorUndoRedoManager, args: Dictionary)
 
 func _make_room(data: Dictionary) -> Node3D:
 	var room_id: int = data.get("room_id", 0)
-	var room_type: String = data.get("room_type", "empty")
-	var key_spawn: String = data.get("key_spawn", "")
-	var gate_key: String = data.get("gate_key", "")
+	var room_type: String = str(data.get("room_type", "empty"))
+	var raw_key_spawn = data.get("key_spawn")
+	var raw_gate_key = data.get("gate_key")
+	var key_spawn: String = "" if raw_key_spawn == null else str(raw_key_spawn)
+	var gate_key: String = "" if raw_gate_key == null else str(raw_gate_key)
 	var grid_pos: Array = data.get("grid_position", [0, 0])
 
 	var room := Node3D.new()
