@@ -32,6 +32,7 @@ func stop() -> void:
 	_peers.clear()
 	if _tcp:
 		_tcp.stop()
+		_tcp = null
 	print("SceneSense: WebSocket server stopped")
 
 func _process(_delta: float) -> void:

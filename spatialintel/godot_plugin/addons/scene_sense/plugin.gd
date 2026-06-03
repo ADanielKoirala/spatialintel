@@ -14,5 +14,5 @@ func _enter_tree() -> void:
 func _exit_tree() -> void:
 	if _ws_server:
 		_ws_server.stop()
-		_ws_server.queue_free()
+		_ws_server.free()
 		_ws_server = null
