@@ -16,6 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="SceneSense Demo"
 config/description="Intentionally broken Godot 4 level for testing the SceneSense analyze_scene() tool."
+run/main_scene="res://game.tscn"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/run/main_scene="res://game.tscn"
 

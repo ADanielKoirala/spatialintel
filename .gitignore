@@ -1,0 +1,11 @@
+# Python packages installed locally
+spatialintel/mcp_server/Lib/
+spatialintel/mcp_server/Scripts/
+spatialintel/mcp_server/__pycache__/
+spatialintel/mcp_server/*.pyc
+
+# Local demo plugin copy (duplicates godot_plugin/addons/)
+spatialintel/demo/addons/
+
+# Claude Code session data
+.claude/

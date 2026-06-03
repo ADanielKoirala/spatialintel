@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "scene-sense": {
+      "command": "C:\\Python311\\python.exe",
+      "args": ["server.py"],
+      "cwd": "C:\\Users\\rsdra\\Desktop\\Jobs and Interviews\\Projects\\spatialintel\\spatialintel\\mcp_server"
+    }
+  }
+}
