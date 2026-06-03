@@ -6,7 +6,8 @@ const PORT = 9800
 const SceneInspectorScript = preload("res://addons/scene_sense/scene_inspector.gd")
 const SpatialQueryScript = preload("res://addons/scene_sense/spatial_query.gd")
 
-var _server := WebSocketMultiplayerPeer.new()
+var _tcp: TCPServer = TCPServer.new()
+var _peers: Dictionary = {}   # instance_id -> WebSocketPeer
 var _editor: EditorInterface
 var _inspector: RefCounted
 var _query: RefCounted
@@ -18,31 +19,42 @@ func start() -> void:
 	_inspector = SceneInspectorScript.new()
 	_query = SpatialQueryScript.new()
 
-	var err := _server.create_server(PORT)
+	var err := _tcp.listen(PORT)
 	if err != OK:
-		push_error("SceneSense: failed to start WebSocket server on port %d (error %d)" % [PORT, err])
+		push_error("SceneSense: failed to listen on port %d (error %d)" % [PORT, err])
 		return
-
-	_server.peer_connected.connect(_on_peer_connected)
-	_server.peer_disconnected.connect(_on_peer_disconnected)
 	print("SceneSense: WebSocket server listening on ws://localhost:%d" % PORT)
 
 func stop() -> void:
-	_server.close()
+	for peer in _peers.values():
+		peer.close()
+	_peers.clear()
+	_tcp.stop()
 	print("SceneSense: WebSocket server stopped")
 
 func _process(_delta: float) -> void:
-	_server.poll()
-	while _server.get_available_packet_count() > 0:
-		var packet := _server.get_packet()
-		var peer_id := _server.get_packet_peer()
-		_handle_message(peer_id, packet)
+	# Accept new TCP connections and upgrade to WebSocket
+	while _tcp.is_connection_available():
+		var stream := _tcp.take_connection()
+		var peer := WebSocketPeer.new()
+		if peer.accept_stream(stream) == OK:
+			_peers[peer.get_instance_id()] = peer
 
-func _on_peer_connected(id: int) -> void:
-	print("SceneSense: client connected (id=%d)" % id)
+	# Poll every peer
+	var dead: Array = []
+	for id in _peers:
+		var peer: WebSocketPeer = _peers[id]
+		peer.poll()
+		match peer.get_ready_state():
+			WebSocketPeer.STATE_OPEN:
+				while peer.get_available_packet_count() > 0:
+					_handle_message(id, peer.get_packet())
+			WebSocketPeer.STATE_CLOSED:
+				dead.append(id)
+				print("SceneSense: client disconnected")
 
-func _on_peer_disconnected(id: int) -> void:
-	print("SceneSense: client disconnected (id=%d)" % id)
+	for id in dead:
+		_peers.erase(id)
 
 func _handle_message(peer_id: int, packet: PackedByteArray) -> void:
 	var text := packet.get_string_from_utf8()
@@ -81,6 +93,6 @@ func _dispatch(command: String, args: Dictionary) -> Dictionary:
 			return {"error": "unknown command: %s" % command}
 
 func _reply(peer_id: int, data: Dictionary) -> void:
-	var peer := _server.get_peer(peer_id)
-	if peer:
-		peer.put_packet(JSON.stringify(data).to_utf8_buffer())
+	if _peers.has(peer_id):
+		var peer: WebSocketPeer = _peers[peer_id]
+		peer.send_text(JSON.stringify(data))
