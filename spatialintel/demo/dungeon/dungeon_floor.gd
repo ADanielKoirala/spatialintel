@@ -94,9 +94,9 @@ func _check_reachability() -> String:
 	# Repeat passes until no new rooms are reached.
 	# Each pass rebuilds the frontier from unvisited neighbours of visited rooms,
 	# so a newly collected key immediately re-unlocks blocked gates on the next pass.
-	var changed := true
-	while changed:
-		changed = false
+	var any_progress := true
+	while any_progress:
+		any_progress = false
 
 		var frontier: Array[int] = []
 		if visited.is_empty():
@@ -121,7 +121,7 @@ func _check_reachability() -> String:
 				continue  # still locked
 
 			visited.append(room_id)
-			changed = true
+			any_progress = true
 
 			if room.key_spawn != "" and not collected.has(room.key_spawn):
 				collected.append(room.key_spawn)

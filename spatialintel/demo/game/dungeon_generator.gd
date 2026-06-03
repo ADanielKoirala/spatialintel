@@ -23,6 +23,7 @@ static func generate(room_count: int, key_count: int, seed_val: int = 0) -> Dung
 	key_count  = maxi(0, mini(key_count, KEY_COLORS.size()))
 
 	var min_cp: int    = key_count * 2 + 2
+	@warning_ignore("integer_division")
 	var cp_length: int = mini(room_count, maxi(min_cp, room_count / 2 + 1))
 
 	var rooms: Array[DungeonRoom] = []
@@ -87,7 +88,8 @@ static func generate(room_count: int, key_count: int, seed_val: int = 0) -> Dung
 		var parent_room: DungeonRoom = eligible[rng.randi() % eligible.size()]
 		var room := DungeonRoom.new()
 		room.room_id       = next_id
-		var y := (i / 2 + 1) * (1 if i % 2 == 0 else -1)
+		@warning_ignore("integer_division")
+		var y: int = (i / 2 + 1) * (1 if i % 2 == 0 else -1)
 		room.grid_position = Vector2i(parent_room.grid_position.x, y)
 		room.room_type     = BRANCH_TYPES[rng.randi() % BRANCH_TYPES.size()]
 		room.connections.append(parent_room.room_id)
@@ -95,10 +97,10 @@ static func generate(room_count: int, key_count: int, seed_val: int = 0) -> Dung
 		rooms.append(room)
 		next_id += 1
 
-	var floor := DungeonFloor.new()
-	floor.floor_seed = seed_val
-	floor.rooms      = rooms
-	return floor
+	var result := DungeonFloor.new()
+	result.floor_seed = seed_val
+	result.rooms      = rooms
+	return result
 
 static func _shuffle(arr: Array, rng: RandomNumberGenerator) -> void:
 	for i in range(arr.size() - 1, 0, -1):

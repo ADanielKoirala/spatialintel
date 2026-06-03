@@ -10,7 +10,7 @@ const ROOM_SPACING := 12.0
 
 var _game_time  := 0.0
 var _game_active := false
-var _player: Player
+var _player: CharacterBody3D  # script assigned at runtime — accessed via duck typing
 var _floor: DungeonFloor
 
 func _ready() -> void:

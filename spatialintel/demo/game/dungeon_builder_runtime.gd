@@ -5,20 +5,20 @@ const ROOM_SPACING  := 12.0
 const FLOOR_SIZE    := Vector3(10.0, 0.3, 10.0)
 const CORRIDOR_WIDTH := 3.0
 
-static func build(floor: DungeonFloor, parent: Node) -> Node3D:
+static func build(dungeon: DungeonFloor, parent: Node) -> Node3D:
 	var container := Node3D.new()
 	container.name = "Dungeon"
 	parent.add_child(container)
 
 	# Pass 1 — rooms
 	var room_nodes: Dictionary = {}
-	for room in floor.rooms:
+	for room in dungeon.rooms:
 		var node := _make_room(room)
 		container.add_child(node)
 		room_nodes[room.room_id] = node
 
 	# Pass 2 — corridors (each pair once)
-	for room in floor.rooms:
+	for room in dungeon.rooms:
 		for conn_id in room.connections:
 			if room.room_id >= conn_id:
 				continue
@@ -41,7 +41,7 @@ static func _make_room(room: DungeonRoom) -> Node3D:
 	root.set_meta("room_id",   room.room_id)
 	root.set_meta("room_type", DungeonRoom.RoomType.keys()[room.room_type].to_lower())
 
-	# Walkable floor
+	# Walkable dungeon
 	var body := StaticBody3D.new()
 	body.name = "Floor"
 	var col   := CollisionShape3D.new()
