@@ -10,6 +10,7 @@ func _on_key_collected(color: String) -> void:
 	if not _open and color == _required_key:
 		_open = true
 		visible = false
-		for child in get_children():
-			if child is CollisionShape3D:
-				child.disabled = true
+		# Zero collision layers — takes effect this physics step, not deferred
+		collision_layer = 0
+		collision_mask  = 0
+		queue_free()

@@ -8,6 +8,9 @@ signal key_collected(color: String)
 
 var collected_keys: Array[String] = []
 
+func _ready() -> void:
+	floor_snap_length = 0.3  # smooths capsule over floor-to-floor seams
+
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= GRAVITY * delta
