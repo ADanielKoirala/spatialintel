@@ -3,6 +3,7 @@ import json
 from mcp.server.fastmcp import FastMCP
 
 from godot_bridge import GodotBridge
+from dungeon_schema import DungeonFloor
 
 mcp = FastMCP("SceneSense")
 bridge = GodotBridge()
@@ -144,6 +145,52 @@ async def analyze_scene() -> str:
         "issue_count": len(issues),
         "issues": issues,
         "scene_summary": summary,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Dungeon schema tools
+# ---------------------------------------------------------------------------
+
+@mcp.tool()
+async def validate_dungeon(dungeon_json: str) -> str:
+    """Validate a dungeon floor description against the DungeonFloor schema.
+
+    Checks: START and BOSS rooms exist, all connections reference real rooms,
+    every gate key is spawned somewhere, and the boss is reachable from start
+    (BFS respecting locked gates and key collection order).
+
+    Args:
+        dungeon_json: JSON string representing a DungeonFloor — must have
+                      "floor_seed" (int) and "rooms" (array). Each room needs:
+                      room_id, room_type (start/empty/combat/puzzle/key/boss),
+                      connections (array of room_id ints),
+                      key_spawn (color string or null),
+                      gate_key (color string or null).
+                      Valid key colors: blue, red, gold, silver, purple.
+    """
+    try:
+        data = json.loads(dungeon_json)
+    except json.JSONDecodeError as e:
+        return _fmt({"valid": False, "errors": [f"Invalid JSON: {e}"]})
+
+    try:
+        floor = DungeonFloor.from_dict(data)
+    except Exception as e:
+        return _fmt({"valid": False, "errors": [f"Schema parse error: {e}"]})
+
+    errors = floor.validate()
+    summary = floor.summarize()
+
+    return _fmt({
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "summary": {
+            "total_rooms": summary["total_rooms"],
+            "room_types": summary["room_types"],
+            "keys_in_floor": summary["keys_in_floor"],
+            "locked_gates": summary["locked_gates"],
+        },
     })
 
 
