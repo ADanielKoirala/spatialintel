@@ -157,7 +157,7 @@ func _make_corridor(id_a: int, id_b: int, pos_a: Vector3, pos_b: Vector3) -> Sta
 	if distance < 1.0:
 		return null
 
-	var corridor_length := maxf(0.5, distance - FLOOR_SIZE.x)
+	var corridor_length := maxf(0.5, distance - FLOOR_SIZE.x + 2.0)
 	var center := (pos_a + pos_b) * 0.5
 
 	var body := StaticBody3D.new()

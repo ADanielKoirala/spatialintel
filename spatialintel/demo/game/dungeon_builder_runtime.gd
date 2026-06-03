@@ -153,7 +153,8 @@ static func _make_corridor(id_a: int, id_b: int, pos_a: Vector3, pos_b: Vector3)
 	if distance < 1.0:
 		return null
 
-	var length := maxf(0.5, distance - FLOOR_SIZE.x)
+	# Extend 1 unit into each room so there is no collision seam at room edges.
+	var length := maxf(0.5, distance - FLOOR_SIZE.x + 2.0)
 
 	var body := StaticBody3D.new()
 	body.name     = "Corridor_%d_%d" % [id_a, id_b]
