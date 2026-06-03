@@ -6,6 +6,7 @@ const PORT = 9800
 const SceneInspectorScript = preload("res://addons/scene_sense/scene_inspector.gd")
 const SpatialQueryScript = preload("res://addons/scene_sense/spatial_query.gd")
 const SceneWriterScript = preload("res://addons/scene_sense/scene_writer.gd")
+const DungeonBuilderScript = preload("res://addons/scene_sense/dungeon_builder.gd")
 
 var _tcp: TCPServer
 var _peers: Dictionary = {}   # instance_id -> WebSocketPeer
@@ -14,6 +15,7 @@ var _undo_redo: EditorUndoRedoManager
 var _inspector: RefCounted
 var _query: RefCounted
 var _writer: RefCounted
+var _dungeon_builder: RefCounted
 
 func setup(editor: EditorInterface, undo_redo: EditorUndoRedoManager) -> void:
 	_editor = editor
@@ -24,6 +26,7 @@ func start() -> void:
 	_inspector = SceneInspectorScript.new()
 	_query = SpatialQueryScript.new()
 	_writer = SceneWriterScript.new()
+	_dungeon_builder = DungeonBuilderScript.new()
 
 	var err := _tcp.listen(PORT)
 	if err != OK:
@@ -116,6 +119,10 @@ func _dispatch(command: String, args: Dictionary) -> Dictionary:
 			if scene_root == null:
 				return {"error": "no scene is currently open in the editor"}
 			return _writer.move_node(scene_root, _undo_redo, args)
+		"build_dungeon":
+			if scene_root == null:
+				return {"error": "no scene is currently open in the editor"}
+			return _dungeon_builder.build(scene_root, _undo_redo, args)
 		_:
 			return {"error": "unknown command: %s" % command}
 

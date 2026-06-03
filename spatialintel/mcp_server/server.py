@@ -231,6 +231,30 @@ async def generate_dungeon(
     })
 
 
+@mcp.tool()
+async def build_dungeon_in_godot(dungeon_json: str) -> str:
+    """Instantiate a dungeon floor as nodes in the currently open Godot scene.
+
+    Each room becomes a Node3D named Room_<id> with a colour-coded floor mesh.
+    Room metadata (type, key_spawn, gate_key) is stored on the node.
+    Key rooms get a glowing sphere marker; gated rooms get a pillar marker.
+    All rooms are placed under a single "Dungeon" container node.
+    Any existing "Dungeon" container is replaced. Undoable with Ctrl+Z.
+
+    Args:
+        dungeon_json: JSON string — either the direct floor object
+                      ({"floor_seed":…, "rooms":[…]}) or the full output
+                      from generate_dungeon ({"floor":{…}, …}).
+    """
+    try:
+        data = json.loads(dungeon_json)
+    except json.JSONDecodeError as e:
+        return _fmt({"error": f"Invalid JSON: {e}"})
+
+    floor_data = data.get("floor", data)
+    return _fmt(await bridge.build_dungeon(floor_data))
+
+
 # ---------------------------------------------------------------------------
 # Write tools
 # ---------------------------------------------------------------------------
