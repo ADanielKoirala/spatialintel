@@ -1,4 +1,7 @@
+import base64
 import json
+import os
+import tempfile
 
 from mcp.server.fastmcp import FastMCP
 
@@ -146,6 +149,38 @@ async def analyze_scene() -> str:
         "issue_count": len(issues),
         "issues": issues,
         "scene_summary": summary,
+    })
+
+
+_SCREENSHOT_PATH = os.path.join(tempfile.gettempdir(), "scenesense_screenshot.png")
+
+
+@mcp.tool()
+async def take_screenshot() -> str:
+    """Capture the Godot 3D editor viewport as a PNG screenshot.
+
+    Saves the image to a temp file and returns the file path.
+    Use the Read tool on the returned path to view the screenshot.
+    """
+    raw = await bridge.screenshot()
+
+    if "error" in raw:
+        return _fmt({"error": raw["error"]})
+
+    result = raw.get("result", {})
+    b64 = result.get("b64", "")
+    if not b64:
+        return _fmt({"error": "no image data received from Godot"})
+
+    img_bytes = base64.b64decode(b64)
+    with open(_SCREENSHOT_PATH, "wb") as f:
+        f.write(img_bytes)
+
+    return _fmt({
+        "saved_to": _SCREENSHOT_PATH,
+        "width": result.get("width"),
+        "height": result.get("height"),
+        "size_kb": round(len(img_bytes) / 1024, 1),
     })
 
 

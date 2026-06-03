@@ -70,3 +70,6 @@ class GodotBridge:
 
     async def build_dungeon(self, dungeon: dict) -> dict:
         return await self.send_command("build_dungeon", {"dungeon": dungeon})
+
+    async def screenshot(self) -> dict:
+        return await self.send_command("screenshot")

@@ -81,6 +81,24 @@ func _dispatch(command: String, args: Dictionary) -> Dictionary:
 	var scene_root := _editor.get_edited_scene_root() if _editor else null
 
 	match command:
+		# --- screenshot ---
+		"screenshot":
+			if _editor == null:
+				return {"error": "editor interface not available"}
+			var viewport: SubViewport = _editor.get_editor_viewport_3d(0)
+			if viewport == null:
+				return {"error": "could not get 3D editor viewport"}
+			var image: Image = viewport.get_texture().get_image()
+			if image == null or image.is_empty():
+				return {"error": "viewport texture is empty — is a scene open?"}
+			image.resize(image.get_width() / 2, image.get_height() / 2, Image.INTERPOLATE_BILINEAR)
+			return {
+				"result": {
+					"b64": Marshalls.raw_to_base64(image.save_png_to_buffer()),
+					"width": image.get_width(),
+					"height": image.get_height(),
+				}
+			}
 		# --- read ---
 		"get_scene_tree":
 			return _inspector.get_scene_tree(scene_root)
