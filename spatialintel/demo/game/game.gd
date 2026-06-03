@@ -80,8 +80,10 @@ func _process(delta: float) -> void:
 	_timer_label.text = "%.1f s" % _game_time
 
 	if _player and is_instance_valid(_player):
-		var keys := _player.collected_keys
-		_keys_label.text = "Keys: " + (", ".join(keys) if keys.size() > 0 else "none")
+		var p := _player as Player
+		if p:
+			var keys: Array[String] = p.collected_keys
+			_keys_label.text = "Keys: " + (", ".join(keys) if keys.size() > 0 else "none")
 
 		# Smooth camera follow from above
 		var target := _player.position + Vector3(0.0, 18.0, 12.0)
