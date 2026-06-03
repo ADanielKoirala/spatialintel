@@ -4,6 +4,7 @@ from mcp.server.fastmcp import FastMCP
 
 from godot_bridge import GodotBridge
 from dungeon_schema import DungeonFloor
+import dungeon_generator
 
 mcp = FastMCP("SceneSense")
 bridge = GodotBridge()
@@ -185,6 +186,42 @@ async def validate_dungeon(dungeon_json: str) -> str:
     return _fmt({
         "valid": len(errors) == 0,
         "errors": errors,
+        "summary": {
+            "total_rooms": summary["total_rooms"],
+            "room_types": summary["room_types"],
+            "keys_in_floor": summary["keys_in_floor"],
+            "locked_gates": summary["locked_gates"],
+        },
+    })
+
+
+@mcp.tool()
+async def generate_dungeon(
+    room_count: int = 12,
+    key_count: int = 2,
+    seed: int = 0,
+) -> str:
+    """Generate a valid dungeon floor and return it as JSON.
+
+    The generator guarantees solvability by construction: a critical path
+    (START → rooms → BOSS) is built first, then keys and locked gates are
+    placed so every key always appears before its gate. Branch rooms are
+    added for optional exploration and dead ends.
+
+    Args:
+        room_count: Total number of rooms (minimum 3, default 12).
+        key_count:  Number of key/gate pairs 0–5 (default 2).
+                    More keys = more routing decisions.
+        seed:       RNG seed for reproducibility (default 0 = random-ish).
+    """
+    floor = dungeon_generator.generate(room_count=room_count, key_count=key_count, seed=seed)
+    errors = floor.validate()
+    summary = floor.summarize()
+
+    return _fmt({
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "floor": floor.to_dict(),
         "summary": {
             "total_rooms": summary["total_rooms"],
             "room_types": summary["room_types"],
