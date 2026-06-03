@@ -8,10 +8,10 @@ func find_nodes_near(root: Node, args: Dictionary) -> Dictionary:
 	var origin := Vector3(od.get("x", 0.0), od.get("y", 0.0), od.get("z", 0.0))
 	var radius: float = args.get("radius", 10.0)
 	var results: Array = []
-	_collect_near(root, origin, radius, results)
+	_collect_near(root, root, origin, radius, results)
 	return {"result": results}
 
-func _collect_near(node: Node, origin: Vector3, radius: float, out: Array) -> void:
+func _collect_near(node: Node, root: Node, origin: Vector3, radius: float, out: Array) -> void:
 	if node is Node3D:
 		var n3d: Node3D = node
 		var dist: float = n3d.global_position.distance_to(origin)
@@ -19,30 +19,30 @@ func _collect_near(node: Node, origin: Vector3, radius: float, out: Array) -> vo
 			out.append({
 				"name": node.name,
 				"type": node.get_class(),
-				"path": str(node.get_path()),
+				"path": _rel(node, root),
 				"distance": snappedf(dist, 0.001)
 			})
 	for child in node.get_children():
-		_collect_near(child, origin, radius, out)
+		_collect_near(child, root, origin, radius, out)
 
 
 func find_missing_colliders(root: Node) -> Dictionary:
 	if root == null:
 		return {"error": "no scene is currently open in the editor"}
 	var results: Array = []
-	_check_missing_colliders(root, results)
+	_check_missing_colliders(root, root, results)
 	return {"result": results}
 
-func _check_missing_colliders(node: Node, out: Array) -> void:
+func _check_missing_colliders(node: Node, root: Node, out: Array) -> void:
 	if node is MeshInstance3D:
 		if not _has_collision_sibling_or_parent(node):
 			out.append({
 				"name": node.name,
-				"path": str(node.get_path()),
+				"path": _rel(node, root),
 				"issue": "MeshInstance3D has no associated CollisionShape3D"
 			})
 	for child in node.get_children():
-		_check_missing_colliders(child, out)
+		_check_missing_colliders(child, root, out)
 
 func _has_collision_sibling_or_parent(node: Node) -> bool:
 	var parent := node.get_parent()
@@ -60,7 +60,7 @@ func find_overlapping_objects(root: Node) -> Dictionary:
 	if root == null:
 		return {"error": "no scene is currently open in the editor"}
 	var nodes: Array = []
-	_collect_spatial(root, nodes)
+	_collect_spatial(root, root, nodes)
 	var results: Array = []
 	for i in range(nodes.size()):
 		for j in range(i + 1, nodes.size()):
@@ -77,12 +77,12 @@ func find_overlapping_objects(root: Node) -> Dictionary:
 				})
 	return {"result": results}
 
-func _collect_spatial(node: Node, out: Array) -> void:
+func _collect_spatial(node: Node, root: Node, out: Array) -> void:
 	if node is PhysicsBody3D:
 		var pb: PhysicsBody3D = node
-		out.append({"name": node.name, "path": str(node.get_path()), "pos": pb.global_position})
+		out.append({"name": node.name, "path": _rel(node, root), "pos": pb.global_position})
 	for child in node.get_children():
-		_collect_spatial(child, out)
+		_collect_spatial(child, root, out)
 
 
 func find_nodes_by_type(root: Node, args: Dictionary) -> Dictionary:
@@ -92,15 +92,15 @@ func find_nodes_by_type(root: Node, args: Dictionary) -> Dictionary:
 	if target.is_empty():
 		return {"error": "missing required argument: type"}
 	var results: Array = []
-	_collect_by_type(root, target, results)
+	_collect_by_type(root, root, target, results)
 	return {"result": results}
 
-func _collect_by_type(node: Node, type_name: String, out: Array) -> void:
+func _collect_by_type(node: Node, root: Node, type_name: String, out: Array) -> void:
 	if node.get_class() == type_name or node.is_class(type_name):
 		var entry: Dictionary = {
 			"name": node.name,
 			"type": node.get_class(),
-			"path": str(node.get_path())
+			"path": _rel(node, root)
 		}
 		if node is Node3D:
 			var n3d: Node3D = node
@@ -111,7 +111,7 @@ func _collect_by_type(node: Node, type_name: String, out: Array) -> void:
 			}
 		out.append(entry)
 	for child in node.get_children():
-		_collect_by_type(child, type_name, out)
+		_collect_by_type(child, root, type_name, out)
 
 
 func summarize_scene(root: Node) -> Dictionary:
@@ -141,3 +141,13 @@ func _count(node: Node, s: Dictionary) -> void:
 	if node.get_script():         s["scripted_node_count"] += 1
 	for child in node.get_children():
 		_count(child, s)
+
+
+func _rel(node: Node, root: Node) -> String:
+	if node == root:
+		return "."
+	var root_path := str(root.get_path())
+	var node_path := str(node.get_path())
+	if node_path.begins_with(root_path + "/"):
+		return node_path.substr(root_path.length() + 1)
+	return str(root.get_path_to(node))

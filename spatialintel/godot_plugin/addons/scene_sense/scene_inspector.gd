@@ -4,13 +4,22 @@ extends RefCounted
 func get_scene_tree(root: Node) -> Dictionary:
 	if root == null:
 		return {"error": "no scene is currently open in the editor"}
-	return {"result": _serialize_node(root)}
+	return {"result": _serialize_node(root, root)}
 
-func _serialize_node(node: Node) -> Dictionary:
+func _serialize_node(node: Node, root: Node) -> Dictionary:
+	var root_path := str(root.get_path())
+	var node_path := str(node.get_path())
+	var rel_path: String
+	if node == root:
+		rel_path = "."
+	elif node_path.begins_with(root_path + "/"):
+		rel_path = node_path.substr(root_path.length() + 1)
+	else:
+		rel_path = str(root.get_path_to(node))
 	var data: Dictionary = {
 		"name": node.name,
 		"type": node.get_class(),
-		"path": str(node.get_path()),
+		"path": rel_path,
 		"children": []
 	}
 
@@ -42,7 +51,7 @@ func _serialize_node(node: Node) -> Dictionary:
 		data["script"] = script.resource_path
 
 	for child in node.get_children():
-		data["children"].append(_serialize_node(child))
+		data["children"].append(_serialize_node(child, root))
 
 	return data
 
