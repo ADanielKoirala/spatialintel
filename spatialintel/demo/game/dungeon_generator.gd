@@ -19,11 +19,11 @@ static func generate(room_count: int, key_count: int, seed_val: int = 0) -> Dung
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_val if seed_val != 0 else rng.randi()
 
-	room_count = max(3, room_count)
-	key_count  = max(0, min(key_count, KEY_COLORS.size()))
+	room_count = maxi(3, room_count)
+	key_count  = maxi(0, mini(key_count, KEY_COLORS.size()))
 
-	var min_cp   := key_count * 2 + 2
-	var cp_length := min(room_count, max(min_cp, room_count / 2 + 1))
+	var min_cp: int    = key_count * 2 + 2
+	var cp_length: int = mini(room_count, maxi(min_cp, room_count / 2 + 1))
 
 	var rooms: Array[DungeonRoom] = []
 	var next_id := 0
