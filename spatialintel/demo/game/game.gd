@@ -56,8 +56,11 @@ func _spawn_player() -> void:
 	add_child(_player)
 
 func _connect_gates() -> void:
+	var player := _player as Player
+	if player == null:
+		return
 	for gate in get_tree().get_nodes_in_group("gates"):
-		_player.key_collected.connect(gate._on_key_collected)
+		player.key_collected.connect(Callable(gate, "_on_key_collected"))
 
 func _connect_boss_triggers() -> void:
 	for trigger in get_tree().get_nodes_in_group("boss_triggers"):
