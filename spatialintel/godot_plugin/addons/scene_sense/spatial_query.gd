@@ -13,7 +13,8 @@ func find_nodes_near(root: Node, args: Dictionary) -> Dictionary:
 
 func _collect_near(node: Node, origin: Vector3, radius: float, out: Array) -> void:
 	if node is Node3D:
-		var dist := node.global_position.distance_to(origin)
+		var n3d: Node3D = node
+		var dist: float = n3d.global_position.distance_to(origin)
 		if dist <= radius:
 			out.append({
 				"name": node.name,
@@ -63,22 +64,23 @@ func find_overlapping_objects(root: Node) -> Dictionary:
 	var results: Array = []
 	for i in range(nodes.size()):
 		for j in range(i + 1, nodes.size()):
-			var dist := (nodes[i].pos as Vector3).distance_to(nodes[j].pos as Vector3)
+			var pos_a: Vector3 = nodes[i]["pos"]
+			var pos_b: Vector3 = nodes[j]["pos"]
+			var dist: float = pos_a.distance_to(pos_b)
 			if dist < 0.5:
 				results.append({
-					"node_a": nodes[i].name,
-					"path_a": nodes[i].path,
-					"node_b": nodes[j].name,
-					"path_b": nodes[j].path,
+					"node_a": nodes[i]["name"],
+					"path_a": nodes[i]["path"],
+					"node_b": nodes[j]["name"],
+					"path_b": nodes[j]["path"],
 					"distance": snappedf(dist, 0.001)
 				})
 	return {"result": results}
 
 func _collect_spatial(node: Node, out: Array) -> void:
-	# Only physics bodies matter for overlap detection — collecting all Node3D
-	# would flood results with children sharing their parent's world position.
 	if node is PhysicsBody3D:
-		out.append({"name": node.name, "path": str(node.get_path()), "pos": node.global_position})
+		var pb: PhysicsBody3D = node
+		out.append({"name": node.name, "path": str(node.get_path()), "pos": pb.global_position})
 	for child in node.get_children():
 		_collect_spatial(child, out)
 
@@ -101,7 +103,12 @@ func _collect_by_type(node: Node, type_name: String, out: Array) -> void:
 			"path": str(node.get_path())
 		}
 		if node is Node3D:
-			entry["position"] = {"x": snappedf(node.global_position.x, 0.001), "y": snappedf(node.global_position.y, 0.001), "z": snappedf(node.global_position.z, 0.001)}
+			var n3d: Node3D = node
+			entry["position"] = {
+				"x": snappedf(n3d.global_position.x, 0.001),
+				"y": snappedf(n3d.global_position.y, 0.001),
+				"z": snappedf(n3d.global_position.z, 0.001)
+			}
 		out.append(entry)
 	for child in node.get_children():
 		_collect_by_type(child, type_name, out)

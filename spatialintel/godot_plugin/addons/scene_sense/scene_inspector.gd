@@ -15,22 +15,27 @@ func _serialize_node(node: Node) -> Dictionary:
 	}
 
 	if node is Node3D:
-		data["position"] = _v3(node.global_position)
-		data["rotation_degrees"] = _v3(node.global_rotation_degrees)
-		data["scale"] = _v3(node.scale)
+		var n3d: Node3D = node
+		data["position"] = _v3(n3d.global_position)
+		data["rotation_degrees"] = _v3(n3d.global_rotation_degrees)
+		data["scale"] = _v3(n3d.scale)
 
 	if node is MeshInstance3D:
-		data["has_mesh"] = node.mesh != null
+		var mi: MeshInstance3D = node
+		data["has_mesh"] = mi.mesh != null
 
 	if node is Camera3D:
-		data["fov"] = node.fov
-		data["current"] = node.current
+		var cam: Camera3D = node
+		data["fov"] = cam.fov
+		data["current"] = cam.current
 
 	if node is Light3D:
-		data["light_energy"] = node.light_energy
+		var light: Light3D = node
+		data["light_energy"] = light.light_energy
 
 	if node is CollisionShape3D:
-		data["shape_type"] = node.shape.get_class() if node.shape else null
+		var cs: CollisionShape3D = node
+		data["shape_type"] = cs.shape.get_class() if cs.shape else null
 
 	var script = node.get_script()
 	if script:
