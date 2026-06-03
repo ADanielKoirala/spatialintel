@@ -108,18 +108,19 @@ static func _make_gate(color: String) -> StaticBody3D:
 	gate.name = "Gate"
 	gate.set_meta("required_key", color)
 	gate.add_to_group("gates")
-	# Position at entrance side of the room
+	# Full-width wall across the room entrance — spans the whole room so the
+	# player cannot squeeze around it. Gate must be unlocked with the key.
 	gate.position = Vector3(-4.0, 1.5, 0.0)
 
 	var col   := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(0.4, 3.0, CORRIDOR_WIDTH)
+	shape.size = Vector3(0.4, 3.0, FLOOR_SIZE.z)
 	col.shape  = shape
 	gate.add_child(col)
 
 	var mesh := MeshInstance3D.new()
 	var box  := BoxMesh.new()
-	box.size = Vector3(0.4, 3.0, CORRIDOR_WIDTH)
+	box.size = Vector3(0.4, 3.0, FLOOR_SIZE.z)
 	mesh.mesh = box
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = _key_color(color)
