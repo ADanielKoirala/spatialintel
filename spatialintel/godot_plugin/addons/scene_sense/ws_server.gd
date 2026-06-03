@@ -49,6 +49,7 @@ func _process(_delta: float) -> void:
 	while _tcp.is_connection_available():
 		var stream := _tcp.take_connection()
 		var peer := WebSocketPeer.new()
+		peer.outbound_buffer_size = 8 * 1024 * 1024  # 8 MB — needed for screenshot payloads
 		if peer.accept_stream(stream) == OK:
 			_peers[peer.get_instance_id()] = peer
 
@@ -94,7 +95,8 @@ func _dispatch(command: String, args: Dictionary) -> Dictionary:
 			image.resize(image.get_width() / 2, image.get_height() / 2, Image.INTERPOLATE_BILINEAR)
 			return {
 				"result": {
-					"b64": Marshalls.raw_to_base64(image.save_png_to_buffer()),
+					"b64": Marshalls.raw_to_base64(image.save_jpg_to_buffer(0.75)),
+					"format": "jpg",
 					"width": image.get_width(),
 					"height": image.get_height(),
 				}

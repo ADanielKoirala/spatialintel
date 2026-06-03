@@ -152,7 +152,7 @@ async def analyze_scene() -> str:
     })
 
 
-_SCREENSHOT_PATH = os.path.join(tempfile.gettempdir(), "scenesense_screenshot.png")
+_SCREENSHOT_PATH = os.path.join(tempfile.gettempdir(), "scenesense_screenshot.jpg")
 
 
 @mcp.tool()
